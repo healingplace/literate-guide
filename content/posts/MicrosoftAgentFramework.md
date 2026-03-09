@@ -1,7 +1,14 @@
 ---
 date: '2026-03-09T14:03:34-04:00'
-draft: true
+draft: false
 title: 'Microsoft Agent Framework'
+categories:
+  - AI
+tags:
+  - AgentFramework
+  - AI
+author: Manish
+description: "Understanding the Microsoft Agent Framework and its applications in AI systems"
 ---
 
 
