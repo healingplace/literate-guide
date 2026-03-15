@@ -1,0 +1,77 @@
+<!doctype html><html lang=en dir=auto data-theme=auto><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>PerformanceTestingDotnet | Manish Mawatwal's Blog</title><meta name=keywords content="dotnet"><meta name=description content="Performance Testing for dotnet application"><meta name=author content="Manish"><link rel=canonical href=https://healingplace.github.io/literate-guide/posts/performancetestingdotnet/><link crossorigin=anonymous href=/literate-guide/assets/css/stylesheet.da3211e5ef867bf2b75fd5a6515cfed7195c011e8ab735694e203810a827097b.css integrity="sha256-2jIR5e+Ge/K3X9WmUVz+1xlcAR6KtzVpTiA4EKgnCXs=" rel="preload stylesheet" as=style><link rel=icon href=https://healingplace.github.io/literate-guide/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://healingplace.github.io/literate-guide/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://healingplace.github.io/literate-guide/favicon-32x32.png><link rel=apple-touch-icon href=https://healingplace.github.io/literate-guide/apple-touch-icon.png><link rel=mask-icon href=https://healingplace.github.io/literate-guide/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=en href=https://healingplace.github.io/literate-guide/posts/performancetestingdotnet/><noscript><style>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--code-block-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51);color-scheme:dark}.list{background:var(--theme)}.toc{background:var(--entry)}}@media(prefers-color-scheme:light){.list::-webkit-scrollbar-thumb{border-color:var(--code-bg)}}</style></noscript><script>localStorage.getItem("pref-theme")==="dark"?document.querySelector("html").dataset.theme="dark":localStorage.getItem("pref-theme")==="light"?document.querySelector("html").dataset.theme="light":window.matchMedia("(prefers-color-scheme: dark)").matches?document.querySelector("html").dataset.theme="dark":document.querySelector("html").dataset.theme="light"</script><meta property="og:url" content="https://healingplace.github.io/literate-guide/posts/performancetestingdotnet/"><meta property="og:site_name" content="Manish Mawatwal's Blog"><meta property="og:title" content="PerformanceTestingDotnet"><meta property="og:description" content="Performance Testing for dotnet application"><meta property="og:locale" content="en_us"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2026-02-10T17:18:39-04:00"><meta property="article:modified_time" content="2026-02-10T17:18:39-04:00"><meta property="article:tag" content="Dotnet"><meta name=twitter:card content="summary"><meta name=twitter:title content="PerformanceTestingDotnet"><meta name=twitter:description content="Performance Testing for dotnet application"><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://healingplace.github.io/literate-guide/posts/"},{"@type":"ListItem","position":2,"name":"PerformanceTestingDotnet","item":"https://healingplace.github.io/literate-guide/posts/performancetestingdotnet/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"PerformanceTestingDotnet","name":"PerformanceTestingDotnet","description":"Performance Testing for dotnet application","keywords":["dotnet"],"articleBody":"Testing performance of .NET code usually means measuring execution time, memory usage, CPU usage, and scalability under different conditions. The best approach depends on what you want to test (a single method vs. a full web API). Here are the most common and reliable methods.\n1. Micro-benchmarking with BenchmarkDotNet (Best for methods/functions) BenchmarkDotNet\nThis is the most popular tool for benchmarking .NET code. It runs your code many times, warms up the JIT compiler, and produces statistically reliable results.\ndotnet add package BenchmarkDotNet using BenchmarkDotNet.Attributes; using BenchmarkDotNet.Running; public class StringBenchmarks { [Benchmark] public string StringConcat() { string s = \"\"; for (int i = 0; i \u003c 100; i++) s += i; return s; } [Benchmark] public string StringBuilder() { var sb = new System.Text.StringBuilder(); for (int i = 0; i \u003c 100; i++) sb.Append(i); return sb.ToString(); } } public class Program { public static void Main() { BenchmarkRunner.Run(); } } Results look like this:\n| Method | Mean | Error | StdDev | |-------------- |-----------:|---------:|---------:| | StringConcat | 1,384.4 ns | 26.63 ns | 34.63 ns | | StringBuilder | 292.0 ns | 5.78 ns | 8.82 ns | // * Hints * Outliers StringBenchmarks.StringConcat: Default -\u003e 3 outliers were removed, 4 outliers were detected (1.31 us, 1.49 us..1.55 us) StringBenchmarks.StringBuilder: Default -\u003e 1 outlier was removed, 2 outliers were detected (275.20 ns, 324.99 ns) // * Legends * Mean : Arithmetic mean of all measurements Error : Half of 99.9% confidence interval StdDev : Standard deviation of all measurements 1 ns : 1 Nanosecond (0.000000001 sec) // ***** BenchmarkRunner: End ***** Run time: 00:00:55 (55.54 sec), executed benchmarks: 2 Global total time: 00:01:03 (63.29 sec), executed benchmarks: 2 You can also use the Benchly for graphic results.\nAdd package for Benchly\ndotnet add package Benchly And add attributes:\nusing Benchly; [ColumnChart] [Histogram] [BoxPlot] public class StringBenchmarks { [Benchmark] public string StringConcat() Sample output:\n","wordCount":"315","inLanguage":"en","datePublished":"2026-02-10T17:18:39-04:00","dateModified":"2026-02-10T17:18:39-04:00","author":{"@type":"Person","name":"Manish"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://healingplace.github.io/literate-guide/posts/performancetestingdotnet/"},"publisher":{"@type":"Organization","name":"Manish Mawatwal's Blog","logo":{"@type":"ImageObject","url":"https://healingplace.github.io/literate-guide/favicon.ico"}}}</script></head><body id=top><header class=header><nav class=nav><div class=logo><a href=https://healingplace.github.io/literate-guide/ accesskey=h title="Manish Mawatwal's Blog (Alt + H)">Manish Mawatwal's Blog</a><div class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)" aria-label="Toggle theme">
+<svg id="moon" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+<svg id="sun" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu><li><a href=https://healingplace.github.io/literate-guide/ title=Home><span>Home</span></a></li><li><a href=https://healingplace.github.io/literate-guide/posts/ title=Posts><span>Posts</span></a></li><li><a href=https://healingplace.github.io/literate-guide/categories/ title=Categories><span>Categories</span></a></li><li><a href=https://healingplace.github.io/literate-guide/tags/ title=Tags><span>Tags</span></a></li><li><a href=https://healingplace.github.io/literate-guide/search/ title=Search><span>Search</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class="post-title entry-hint-parent">PerformanceTestingDotnet</h1><div class=post-description>Performance Testing for dotnet application</div><div class=post-meta><span title='2026-02-10 17:18:39 -0400 -0400'>February 10, 2026</span>&nbsp;·&nbsp;<span>Manish</span></div></header><div class=post-content><p>Testing performance of <strong>.NET code</strong> usually means measuring <strong>execution time, memory usage, CPU usage, and scalability</strong> under different conditions. The best approach depends on what you want to test (a single method vs. a full web API). Here are the most common and reliable methods.</p><h2 id=1-micro-benchmarking-with-benchmarkdotnet-best-for-methodsfunctions>1. Micro-benchmarking with BenchmarkDotNet (Best for methods/functions)<a hidden class=anchor aria-hidden=true href=#1-micro-benchmarking-with-benchmarkdotnet-best-for-methodsfunctions>#</a></h2><p>BenchmarkDotNet</p><p>This is the <strong>most popular tool for benchmarking .NET code</strong>. It runs your code many times, warms up the JIT compiler, and produces statistically reliable results.</p><pre tabindex=0><code>dotnet add package BenchmarkDotNet
+</code></pre><pre tabindex=0><code>using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Running;
+
+public class StringBenchmarks
+{
+    [Benchmark]
+    public string StringConcat()
+    {
+        string s = &#34;&#34;;
+        for (int i = 0; i &lt; 100; i++)
+            s += i;
+        return s;
+    }
+
+    [Benchmark]
+    public string StringBuilder()
+    {
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i &lt; 100; i++)
+            sb.Append(i);
+        return sb.ToString();
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        BenchmarkRunner.Run&lt;StringBenchmarks&gt;();
+    }
+}
+</code></pre><p>Results look like this:</p><pre tabindex=0><code>| Method        | Mean       | Error    | StdDev   |
+|-------------- |-----------:|---------:|---------:|
+| StringConcat  | 1,384.4 ns | 26.63 ns | 34.63 ns |
+| StringBuilder |   292.0 ns |  5.78 ns |  8.82 ns |
+
+// * Hints *
+Outliers
+  StringBenchmarks.StringConcat: Default  -&gt; 3 outliers were removed, 4 outliers were detected (1.31 us, 1.49 us..1.55 us)
+  StringBenchmarks.StringBuilder: Default -&gt; 1 outlier  was  removed, 2 outliers were detected (275.20 ns, 324.99 ns) 
+
+// * Legends *
+  Mean   : Arithmetic mean of all measurements
+  Error  : Half of 99.9% confidence interval
+  StdDev : Standard deviation of all measurements
+  1 ns   : 1 Nanosecond (0.000000001 sec)
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:55 (55.54 sec), executed benchmarks: 2
+
+Global total time: 00:01:03 (63.29 sec), executed benchmarks: 2
+</code></pre><p>You can also use the Benchly for graphic results.</p><p>Add package for Benchly</p><pre tabindex=0><code>dotnet add package Benchly
+</code></pre><p>And add attributes:</p><pre tabindex=0><code>using Benchly;
+
+  
+
+[ColumnChart]
+
+[Histogram]
+
+[BoxPlot]
+
+public class StringBenchmarks
+
+{
+
+    [Benchmark]
+
+    public string StringConcat()
+</code></pre><p>Sample output:</p><p><img alt="Benchly BoxPlot Graph" loading=lazy src=image.png></p></div><footer class=post-footer><ul class=post-tags><li><a href=https://healingplace.github.io/literate-guide/tags/dotnet/>Dotnet</a></li></ul></footer></article></main><footer class=footer><span>&copy; 2026 <a href=https://healingplace.github.io/literate-guide/>Manish Mawatwal's Blog</a></span> ·
+<span>Powered by
+<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
+<a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentColor"><path d="M12 6H0l6-6z"/></svg>
+</a><script>let menu=document.getElementById("menu");if(menu){const e=localStorage.getItem("menu-scroll-position");e&&(menu.scrollLeft=parseInt(e,10)),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}}document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{const e=document.querySelector("html");e.dataset.theme==="dark"?(e.dataset.theme="light",localStorage.setItem("pref-theme","light")):(e.dataset.theme="dark",localStorage.setItem("pref-theme","dark"))})</script></body></html>
