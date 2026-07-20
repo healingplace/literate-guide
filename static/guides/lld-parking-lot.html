@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LLD Study Guide: Parking Lot System</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-panel: #101627;
+    --bg-code: #0d1220;
+    --border: #1e2740;
+    --text: #c8d3e8;
+    --text-dim: #7a88a8;
+    --amber: #f0a848;
+    --cyan: #4ecfd8;
+    --green: #6ecf8e;
+    --red: #e0748a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    margin: 0 0 6px;
+    color: var(--amber);
+    font-size: 1.5em;
+    letter-spacing: 0.3px;
+  }
+  header p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.92em;
+  }
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 14px 32px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    color: var(--text-dim);
+    padding: 10px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85em;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--cyan);
+    background: var(--bg-panel);
+    border-color: var(--cyan);
+  }
+  .tab-content {
+    display: none;
+    padding: 28px 32px 48px;
+    max-width: 980px;
+  }
+  .tab-content.active { display: block; }
+  h2 {
+    color: var(--cyan);
+    font-size: 1.15em;
+    border-left: 3px solid var(--cyan);
+    padding-left: 10px;
+    margin-top: 32px;
+  }
+  h2:first-child { margin-top: 0; }
+  h3 {
+    color: var(--amber);
+    font-size: 0.98em;
+    margin-bottom: 6px;
+  }
+  code, pre {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+  }
+  pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-size: 0.82em;
+    line-height: 1.55;
+  }
+  code.inline {
+    background: var(--bg-code);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.88em;
+    color: var(--cyan);
+  }
+  .kw { color: var(--amber); }
+  .tp { color: var(--cyan); }
+  .str { color: var(--green); }
+  .cm { color: var(--text-dim); font-style: italic; }
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 0.9em;
+    border-left: 4px solid;
+  }
+  .callout.tip { background: rgba(78,207,216,0.08); border-color: var(--cyan); }
+  .callout.warn { background: rgba(240,168,72,0.08); border-color: var(--amber); }
+  .callout.follow { background: rgba(110,207,142,0.08); border-color: var(--green); }
+  .callout.gap { background: rgba(224,116,138,0.08); border-color: var(--red); }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.88em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { color: var(--amber); background: var(--bg-code); }
+  .badge {
+    display: inline-block;
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--bg-code);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LLD Study Guide &mdash; Parking Lot System</h1>
+  <p>Low level design walkthrough in C# / .NET &mdash; entities, interfaces, patterns, concurrency, extensions</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(0)">1. Requirements</button>
+  <button class="tab-btn" onclick="showTab(1)">2. Class Design</button>
+  <button class="tab-btn" onclick="showTab(2)">3. C# Implementation</button>
+  <button class="tab-btn" onclick="showTab(3)">4. Patterns Used</button>
+  <button class="tab-btn" onclick="showTab(4)">5. Concurrency</button>
+  <button class="tab-btn" onclick="showTab(5)">6. Extensions &amp; Follow-ups</button>
+</div>
+
+<!-- TAB 0: REQUIREMENTS -->
+<div class="tab-content active">
+  <h2>Clarifying Questions to Ask First</h2>
+  <div class="callout tip">
+    In an interview, spend 2 to 3 minutes here out loud. It signals you don't jump straight to code, and it narrows the scope so you don't over-engineer.
+  </div>
+  <ul>
+    <li>How many vehicle types? (motorcycle, car, bus/truck are the standard three)</li>
+    <li>Multiple spot sizes, and can a larger vehicle use a smaller spot's tier? (usually no, but a bus might need multiple contiguous large spots)</li>
+    <li>Single level or multiple floors?</li>
+    <li>Pricing model: flat rate, per-hour, or tiered by duration?</li>
+    <li>Payment at entry or at exit?</li>
+    <li>Do we need to support reservations, or just walk-in allocation?</li>
+    <li>Concurrent entry at multiple gates: does allocation need to be thread-safe?</li>
+  </ul>
+
+  <h2>Functional Requirements (assumed for this walkthrough)</h2>
+  <ul>
+    <li>Support 3 vehicle types: Motorcycle, Car, Bus</li>
+    <li>Support 3 spot sizes: Small, Medium, Large</li>
+    <li>Multiple floors, each with a fixed count of spots per size</li>
+    <li>Vehicle enters, gets assigned nearest available valid spot, receives a ticket</li>
+    <li>Vehicle exits, pays based on duration, spot is freed</li>
+    <li>Display available spot count per floor per size</li>
+  </ul>
+
+  <h2>Non-Functional Requirements</h2>
+  <ul>
+    <li>Thread safety for concurrent entry/exit across multiple gates</li>
+    <li>Extensible pricing (flat vs. hourly vs. tiered) without modifying core allocation logic</li>
+    <li>Extensible allocation strategy (nearest-first vs. fill-lowest-floor-first)</li>
+  </ul>
+</div>
+
+<!-- TAB 1: CLASS DESIGN -->
+<div class="tab-content">
+  <h2>Core Entities</h2>
+  <table>
+    <tr><th>Entity</th><th>Responsibility</th></tr>
+    <tr><td>ParkingLot</td><td>Top-level singleton-ish coordinator; owns floors</td></tr>
+    <tr><td>ParkingFloor</td><td>Owns a collection of spots for one level</td></tr>
+    <tr><td>ParkingSpot</td><td>A single spot; knows its size and occupancy state</td></tr>
+    <tr><td>Vehicle</td><td>Abstract base; Motorcycle / Car / Bus derive from it</td></tr>
+    <tr><td>Ticket</td><td>Issued on entry; tracks vehicle, spot, entry time</td></tr>
+    <tr><td>IPricingStrategy</td><td>Computes fee given a ticket and exit time</td></tr>
+    <tr><td>ISpotAllocationStrategy</td><td>Decides which spot a vehicle gets</td></tr>
+    <tr><td>ParkingGate / ExitGate</td><td>Entry point that talks to ParkingLot</td></tr>
+  </table>
+
+  <h2>Key Design Decisions</h2>
+  <div class="callout tip">
+    <strong>Composition over inheritance for ParkingLot &rarr; Floors &rarr; Spots.</strong> A ParkingLot "has" floors, a floor "has" spots. This isn't an inheritance chain.
+  </div>
+  <div class="callout tip">
+    <strong>Inheritance for Vehicle types.</strong> Motorcycle, Car, Bus all share the contract "what size spot do I need", which varies by type, this is a legitimate polymorphism case.
+  </div>
+  <div class="callout tip">
+    <strong>Strategy pattern for both pricing and allocation.</strong> These are the two axes interviewers usually push on ("what if pricing changes to per-minute after the first hour?"). Isolating them behind interfaces means ParkingLot never changes.
+  </div>
+
+  <h2>Relationships (textual diagram)</h2>
+  <pre>ParkingLot (1) ---- (many) ParkingFloor
+ParkingFloor (1) ---- (many) ParkingSpot
+ParkingSpot (1) ---- (0..1) Vehicle   [occupancy]
+Ticket ---- (1) Vehicle
+Ticket ---- (1) ParkingSpot
+ParkingLot ---- (1) ISpotAllocationStrategy
+ParkingLot ---- (1) IPricingStrategy
+Vehicle &lt;|-- Motorcycle
+Vehicle &lt;|-- Car
+Vehicle &lt;|-- Bus</pre>
+</div>
+
+<!-- TAB 2: C# IMPLEMENTATION -->
+<div class="tab-content">
+  <h2>Enums and Core Types</h2>
+<pre><span class="kw">public enum</span> <span class="tp">SpotSize</span> { Small, Medium, Large }
+
+<span class="kw">public enum</span> <span class="tp">VehicleType</span> { Motorcycle, Car, Bus }</pre>
+
+  <h2>Vehicle Hierarchy</h2>
+<pre><span class="kw">public abstract class</span> <span class="tp">Vehicle</span>
+{
+    <span class="kw">public string</span> LicensePlate { <span class="kw">get</span>; }
+    <span class="kw">public abstract</span> VehicleType Type { <span class="kw">get</span>; }
+    <span class="kw">public abstract</span> SpotSize RequiredSpotSize { <span class="kw">get</span>; }
+
+    <span class="kw">protected</span> Vehicle(<span class="kw">string</span> licensePlate)
+    {
+        LicensePlate = licensePlate;
+    }
+}
+
+<span class="kw">public class</span> <span class="tp">Motorcycle</span> : Vehicle
+{
+    <span class="kw">public</span> Motorcycle(<span class="kw">string</span> plate) : <span class="kw">base</span>(plate) { }
+    <span class="kw">public override</span> VehicleType Type => VehicleType.Motorcycle;
+    <span class="kw">public override</span> SpotSize RequiredSpotSize => SpotSize.Small;
+}
+
+<span class="kw">public class</span> <span class="tp">Car</span> : Vehicle
+{
+    <span class="kw">public</span> Car(<span class="kw">string</span> plate) : <span class="kw">base</span>(plate) { }
+    <span class="kw">public override</span> VehicleType Type => VehicleType.Car;
+    <span class="kw">public override</span> SpotSize RequiredSpotSize => SpotSize.Medium;
+}
+
+<span class="kw">public class</span> <span class="tp">Bus</span> : Vehicle
+{
+    <span class="kw">public</span> Bus(<span class="kw">string</span> plate) : <span class="kw">base</span>(plate) { }
+    <span class="kw">public override</span> VehicleType Type => VehicleType.Bus;
+    <span class="kw">public override</span> SpotSize RequiredSpotSize => SpotSize.Large;
+}</pre>
+
+  <h2>ParkingSpot</h2>
+<pre><span class="kw">public class</span> <span class="tp">ParkingSpot</span>
+{
+    <span class="kw">public string</span> Id { <span class="kw">get</span>; }
+    <span class="kw">public</span> SpotSize Size { <span class="kw">get</span>; }
+    <span class="kw">public bool</span> IsOccupied { <span class="kw">get; private set</span>; }
+    <span class="kw">public</span> Vehicle? ParkedVehicle { <span class="kw">get; private set</span>; }
+
+    <span class="kw">private readonly object</span> _lock = <span class="kw">new</span>();
+
+    <span class="kw">public</span> ParkingSpot(<span class="kw">string</span> id, SpotSize size)
+    {
+        Id = id;
+        Size = size;
+    }
+
+    <span class="kw">public bool</span> TryAssign(Vehicle vehicle)
+    {
+        <span class="kw">lock</span> (_lock)
+        {
+            <span class="kw">if</span> (IsOccupied) <span class="kw">return false</span>;
+            ParkedVehicle = vehicle;
+            IsOccupied = <span class="kw">true</span>;
+            <span class="kw">return true</span>;
+        }
+    }
+
+    <span class="kw">public void</span> Release()
+    {
+        <span class="kw">lock</span> (_lock)
+        {
+            ParkedVehicle = <span class="kw">null</span>;
+            IsOccupied = <span class="kw">false</span>;
+        }
+    }
+}</pre>
+
+  <h2>Ticket</h2>
+<pre><span class="kw">public class</span> <span class="tp">Ticket</span>
+{
+    <span class="kw">public string</span> Id { <span class="kw">get</span>; } = Guid.NewGuid().ToString();
+    <span class="kw">public</span> Vehicle Vehicle { <span class="kw">get</span>; }
+    <span class="kw">public</span> ParkingSpot Spot { <span class="kw">get</span>; }
+    <span class="kw">public</span> DateTime EntryTime { <span class="kw">get</span>; }
+    <span class="kw">public</span> DateTime? ExitTime { <span class="kw">get; set</span>; }
+
+    <span class="kw">public</span> Ticket(Vehicle vehicle, ParkingSpot spot)
+    {
+        Vehicle = vehicle;
+        Spot = spot;
+        EntryTime = DateTime.UtcNow;
+    }
+}</pre>
+
+  <h2>Allocation Strategy (Strategy Pattern)</h2>
+<pre><span class="kw">public interface</span> <span class="tp">ISpotAllocationStrategy</span>
+{
+    ParkingSpot? FindSpot(<span class="tp">IEnumerable</span>&lt;ParkingFloor&gt; floors, Vehicle vehicle);
+}
+
+<span class="kw">public class</span> <span class="tp">NearestFirstAllocation</span> : ISpotAllocationStrategy
+{
+    <span class="kw">public</span> ParkingSpot? FindSpot(<span class="tp">IEnumerable</span>&lt;ParkingFloor&gt; floors, Vehicle vehicle)
+    {
+        <span class="kw">foreach</span> (<span class="kw">var</span> floor <span class="kw">in</span> floors.OrderBy(f => f.Level))
+        {
+            <span class="kw">var</span> spot = floor.FindAvailableSpot(vehicle.RequiredSpotSize);
+            <span class="kw">if</span> (spot != <span class="kw">null</span>) <span class="kw">return</span> spot;
+        }
+        <span class="kw">return null</span>;
+    }
+}</pre>
+
+  <h2>Pricing Strategy (Strategy Pattern)</h2>
+<pre><span class="kw">public interface</span> <span class="tp">IPricingStrategy</span>
+{
+    <span class="kw">decimal</span> CalculateFee(Ticket ticket, DateTime exitTime);
+}
+
+<span class="kw">public class</span> <span class="tp">HourlyTieredPricing</span> : IPricingStrategy
+{
+    <span class="kw">private static readonly</span> <span class="tp">Dictionary</span>&lt;VehicleType, <span class="kw">decimal</span>&gt; HourlyRate = <span class="kw">new</span>()
+    {
+        { VehicleType.Motorcycle, 2.00m },
+        { VehicleType.Car, 4.00m },
+        { VehicleType.Bus, 8.00m }
+    };
+
+    <span class="kw">public decimal</span> CalculateFee(Ticket ticket, DateTime exitTime)
+    {
+        <span class="kw">var</span> duration = exitTime - ticket.EntryTime;
+        <span class="kw">var</span> billableHours = (<span class="kw">int</span>)Math.Ceiling(duration.TotalHours);
+        billableHours = Math.Max(billableHours, 1);
+        <span class="kw">return</span> billableHours * HourlyRate[ticket.Vehicle.Type];
+    }
+}</pre>
+
+  <h2>ParkingFloor</h2>
+<pre><span class="kw">public class</span> <span class="tp">ParkingFloor</span>
+{
+    <span class="kw">public int</span> Level { <span class="kw">get</span>; }
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;ParkingSpot&gt; _spots;
+
+    <span class="kw">public</span> ParkingFloor(<span class="kw">int</span> level, <span class="tp">List</span>&lt;ParkingSpot&gt; spots)
+    {
+        Level = level;
+        _spots = spots;
+    }
+
+    <span class="kw">public</span> ParkingSpot? FindAvailableSpot(SpotSize size) =>
+        _spots.FirstOrDefault(s => s.Size == size && !s.IsOccupied);
+
+    <span class="kw">public int</span> AvailableCount(SpotSize size) =>
+        _spots.Count(s => s.Size == size && !s.IsOccupied);
+}</pre>
+
+  <h2>ParkingLot (Coordinator)</h2>
+<pre><span class="kw">public class</span> <span class="tp">ParkingLot</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;ParkingFloor&gt; _floors;
+    <span class="kw">private readonly</span> ISpotAllocationStrategy _allocationStrategy;
+    <span class="kw">private readonly</span> IPricingStrategy _pricingStrategy;
+    <span class="kw">private readonly</span> <span class="tp">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, Ticket&gt; _activeTickets = <span class="kw">new</span>();
+
+    <span class="kw">public</span> ParkingLot(
+        <span class="tp">List</span>&lt;ParkingFloor&gt; floors,
+        ISpotAllocationStrategy allocationStrategy,
+        IPricingStrategy pricingStrategy)
+    {
+        _floors = floors;
+        _allocationStrategy = allocationStrategy;
+        _pricingStrategy = pricingStrategy;
+    }
+
+    <span class="kw">public</span> Ticket? Enter(Vehicle vehicle)
+    {
+        <span class="kw">var</span> spot = _allocationStrategy.FindSpot(_floors, vehicle);
+        <span class="kw">if</span> (spot == <span class="kw">null</span> || !spot.TryAssign(vehicle))
+            <span class="kw">return null</span>; <span class="cm">// lot full, or lost a race to another gate</span>
+
+        <span class="kw">var</span> ticket = <span class="kw">new</span> Ticket(vehicle, spot);
+        _activeTickets[ticket.Id] = ticket;
+        <span class="kw">return</span> ticket;
+    }
+
+    <span class="kw">public decimal</span> Exit(<span class="kw">string</span> ticketId)
+    {
+        <span class="kw">if</span> (!_activeTickets.TryRemove(ticketId, <span class="kw">out var</span> ticket))
+            <span class="kw">throw new</span> <span class="tp">InvalidOperationException</span>(<span class="str">"Unknown ticket"</span>);
+
+        ticket.ExitTime = DateTime.UtcNow;
+        <span class="kw">var</span> fee = _pricingStrategy.CalculateFee(ticket, ticket.ExitTime.Value);
+        ticket.Spot.Release();
+        <span class="kw">return</span> fee;
+    }
+}</pre>
+  <div class="callout warn">
+    Note the retry gap: <code class="inline">TryAssign</code> can fail if two gates raced for the same spot found via <code class="inline">FindAvailableSpot</code>. A production version would loop or re-query on failure. Mentioning this out loud in an interview is a strong signal.
+  </div>
+</div>
+
+<!-- TAB 3: PATTERNS -->
+<div class="tab-content">
+  <h2>Patterns Used and Why</h2>
+
+  <h3>Strategy <span class="badge">allocation + pricing</span></h3>
+  <p>Both "how do we pick a spot" and "how do we compute a fee" are things that change independently of the rest of the system. Wrapping each behind an interface means <code class="inline">ParkingLot</code> never needs modification when the business changes a pricing tier or wants a different allocation heuristic. This is the single most commonly probed pattern in this problem.</p>
+
+  <h3>Factory (optional) <span class="badge">vehicle creation</span></h3>
+  <p>If entry gates need to construct a Vehicle from a scanned plate and detected type, a small <code class="inline">VehicleFactory</code> centralizes the <code class="inline">switch</code> on vehicle type so callers don't do it inline. Not strictly required if vehicles are passed in already constructed, worth mentioning as an option.</p>
+
+  <h3>Singleton (careful framing) <span class="badge">ParkingLot instance</span></h3>
+  <p>A physical parking lot naturally has one instance. If asked to make it a Singleton, prefer constructor-based dependency injection registered as a singleton service in .NET's DI container over a static <code class="inline">Instance</code> property. Classic Singleton is harder to test and creates hidden global state, worth flagging as a tradeoff if the interviewer pushes.</p>
+
+  <h3>Observer (extension point)</h3>
+  <p>If asked "how would you notify a display board when a floor fills up", this is where Observer fits: <code class="inline">ParkingFloor</code> raises an event, a <code class="inline">DisplayBoard</code> subscriber updates without the floor knowing anything about displays.</p>
+
+  <div class="callout follow">
+    Interviewers often ask "which pattern did you use and why" as a direct follow-up. Have the one-sentence justification ready for Strategy specifically, since it is the load-bearing pattern here.
+  </div>
+</div>
+
+<!-- TAB 4: CONCURRENCY -->
+<div class="tab-content">
+  <h2>Where Concurrency Actually Matters</h2>
+  <ul>
+    <li><strong>Spot assignment race:</strong> two gates find the same "available" spot at once. Handled with a per-spot <code class="inline">lock</code> inside <code class="inline">TryAssign</code>, the check-and-set has to be atomic, not just the read.</li>
+    <li><strong>Active ticket tracking:</strong> use <code class="inline">ConcurrentDictionary</code> rather than <code class="inline">Dictionary</code> for <code class="inline">_activeTickets</code>, since entry and exit happen from different gate threads concurrently.</li>
+    <li><strong>Floor-level counts:</strong> if you expose a live "spots available" counter for a display board, prefer computing it on demand (as shown) over maintaining a separate mutable counter that can drift out of sync with actual spot state.</li>
+  </ul>
+
+  <h2>What to Say if Pushed Further</h2>
+  <div class="callout tip">
+    If the interviewer asks "what if this needs to scale across multiple parking lot locations with a shared backend", that's the signal to pivot from LLD to HLD: talk about a database-backed spot reservation with optimistic concurrency (a version column) instead of in-memory locks, and mention this is exactly the kind of optimistic vs. pessimistic concurrency distinction from your SQL Server prep.
+  </div>
+
+  <h2>Common Mistake to Avoid</h2>
+  <div class="callout warn">
+    Don't lock the entire <code class="inline">ParkingLot</code> or <code class="inline">ParkingFloor</code> on every entry. That serializes all gates behind one lock and kills throughput. Lock at the spot level, the smallest unit of contention.
+  </div>
+</div>
+
+<!-- TAB 5: EXTENSIONS -->
+<div class="tab-content">
+  <h2>Likely Follow-Up Questions</h2>
+  <table>
+    <tr><th>Question</th><th>How to Answer</th></tr>
+    <tr><td>Add reservations in advance</td><td>Introduce a <code class="inline">Reservation</code> entity holding a spot in a "reserved" state distinct from "occupied"; allocation strategy checks both states</td></tr>
+    <tr><td>Support EV charging spots</td><td>Add <code class="inline">SpotFeature</code> flags (e.g., HasCharger) alongside Size, allocation strategy filters on required features</td></tr>
+    <tr><td>Multiple entry/exit gates simultaneously</td><td>Already covered, per-spot locking plus ConcurrentDictionary for tickets</td></tr>
+    <tr><td>Handle a full lot gracefully</td><td><code class="inline">Enter</code> returns null; gate displays "Lot Full" and can maintain a waiting queue if required</td></tr>
+    <tr><td>Refactor pricing to first-hour-free, then per-30-min</td><td>New class implementing <code class="inline">IPricingStrategy</code>, zero changes to ParkingLot, this is the payoff of the Strategy pattern</td></tr>
+    <tr><td>Persist state across restarts</td><td>Swap in-memory collections for a repository interface (<code class="inline">ISpotRepository</code>), backed by EF Core / SQL Server, ties into your EF Core prep</td></tr>
+  </table>
+
+  <h2>Gap to Acknowledge if Asked</h2>
+  <div class="callout gap">
+    This design doesn't handle payment processing itself, only fee calculation. If asked to extend it, introduce an <code class="inline">IPaymentProcessor</code> interface and treat it the same way as pricing: injected, swappable, and outside the core allocation logic.
+  </div>
+
+  <h2>30-Second Verbal Summary (for opening the answer)</h2>
+  <p>"I'd model ParkingLot as owning Floors, Floors owning Spots. Vehicle types drive required spot size through polymorphism. I'd isolate the two things that change most, spot allocation and pricing, behind Strategy interfaces so the core coordinator never needs to change. For concurrency, I'd lock at the individual spot level rather than the whole lot, and use a ConcurrentDictionary for active tickets since gates operate independently."</p>
+</div>
+
+<script>
+  function showTab(index) {
+    document.querySelectorAll('.tab-content').forEach((el, i) => {
+      el.classList.toggle('active', i === index);
+    });
+    document.querySelectorAll('.tab-btn').forEach((el, i) => {
+      el.classList.toggle('active', i === index);
+    });
+  }
+</script>
+
+</body>
+</html>
