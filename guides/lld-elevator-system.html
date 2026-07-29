@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LLD Study Guide: Elevator System</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-panel: #101627;
+    --bg-code: #0d1220;
+    --border: #1e2740;
+    --text: #c8d3e8;
+    --text-dim: #7a88a8;
+    --amber: #f0a848;
+    --cyan: #4ecfd8;
+    --green: #6ecf8e;
+    --red: #e0748a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    margin: 0 0 6px;
+    color: var(--amber);
+    font-size: 1.5em;
+    letter-spacing: 0.3px;
+  }
+  header p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.92em;
+  }
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 14px 32px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    color: var(--text-dim);
+    padding: 10px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85em;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--cyan);
+    background: var(--bg-panel);
+    border-color: var(--cyan);
+  }
+  .tab-content {
+    display: none;
+    padding: 28px 32px 48px;
+    max-width: 980px;
+  }
+  .tab-content.active { display: block; }
+  h2 {
+    color: var(--cyan);
+    font-size: 1.15em;
+    border-left: 3px solid var(--cyan);
+    padding-left: 10px;
+    margin-top: 32px;
+  }
+  h2:first-child { margin-top: 0; }
+  h3 {
+    color: var(--amber);
+    font-size: 0.98em;
+    margin-bottom: 6px;
+  }
+  code, pre {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+  }
+  pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-size: 0.82em;
+    line-height: 1.55;
+  }
+  code.inline {
+    background: var(--bg-code);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.88em;
+    color: var(--cyan);
+  }
+  .kw { color: var(--amber); }
+  .tp { color: var(--cyan); }
+  .str { color: var(--green); }
+  .cm { color: var(--text-dim); font-style: italic; }
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 0.9em;
+    border-left: 4px solid;
+  }
+  .callout.tip { background: rgba(78,207,216,0.08); border-color: var(--cyan); }
+  .callout.warn { background: rgba(240,168,72,0.08); border-color: var(--amber); }
+  .callout.follow { background: rgba(110,207,142,0.08); border-color: var(--green); }
+  .callout.gap { background: rgba(224,116,138,0.08); border-color: var(--red); }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 0.88em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th { color: var(--amber); background: var(--bg-code); }
+  .badge {
+    display: inline-block;
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--bg-code);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LLD Study Guide &mdash; Elevator System</h1>
+  <p>Low level design walkthrough in C# / .NET &mdash; scheduling, state machine, patterns, concurrency, extensions</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab(0)">1. Requirements</button>
+  <button class="tab-btn" onclick="showTab(1)">2. Class Design</button>
+  <button class="tab-btn" onclick="showTab(2)">3. C# Implementation</button>
+  <button class="tab-btn" onclick="showTab(3)">4. Patterns Used</button>
+  <button class="tab-btn" onclick="showTab(4)">5. Concurrency &amp; State</button>
+  <button class="tab-btn" onclick="showTab(5)">6. Extensions &amp; Follow-ups</button>
+</div>
+
+<!-- TAB 0: REQUIREMENTS -->
+<div class="tab-content active">
+  <h2>Clarifying Questions to Ask First</h2>
+  <div class="callout tip">
+    This problem is a state machine and a scheduling algorithm wearing a building's clothes. Nail down scope before writing a single class.
+  </div>
+  <ul>
+    <li>How many elevators, how many floors?</li>
+    <li>Are there separate up/down buttons per floor (external requests), plus a panel inside each car (internal requests)?</li>
+    <li>Single scheduling strategy, or should it be pluggable (nearest car, least busy, zone-based)?</li>
+    <li>Does the elevator need to support express/service floors, or weight limits?</li>
+    <li>Is this a single building, or do we need to model a bank of elevators sharing one dispatcher?</li>
+    <li>Do we need to simulate movement over time, or just track state transitions?</li>
+  </ul>
+
+  <h2>Functional Requirements (assumed for this walkthrough)</h2>
+  <ul>
+    <li>N elevators serving M floors</li>
+    <li>External request: a floor button press with a desired direction (Up/Down)</li>
+    <li>Internal request: a passenger inside the car presses a destination floor</li>
+    <li>A central dispatcher assigns each external request to the best available elevator</li>
+    <li>Each elevator moves one floor at a time, stopping to pick up/drop off along its path</li>
+    <li>Doors open at every stop that matches a pending request</li>
+  </ul>
+
+  <h2>Non-Functional Requirements</h2>
+  <ul>
+    <li>Thread safety: multiple floor buttons can be pressed concurrently across the building</li>
+    <li>Extensible dispatch strategy (nearest-car-first today, could change to zone-based tomorrow)</li>
+    <li>Elevator state transitions must be well-defined and never contradictory (can't be Moving and DoorOpen at once)</li>
+  </ul>
+</div>
+
+<!-- TAB 1: CLASS DESIGN -->
+<div class="tab-content">
+  <h2>Core Entities</h2>
+  <table>
+    <tr><th>Entity</th><th>Responsibility</th></tr>
+    <tr><td>ElevatorController</td><td>Top-level dispatcher; owns all elevators, routes requests to the best one</td></tr>
+    <tr><td>Elevator</td><td>A single car; owns its state, current floor, direction, and pending stops</td></tr>
+    <tr><td>ElevatorState</td><td>Enum: Idle, MovingUp, MovingDown, DoorOpen</td></tr>
+    <tr><td>Direction</td><td>Enum: Up, Down, None</td></tr>
+    <tr><td>ExternalRequest</td><td>A floor button press: originating floor + desired direction</td></tr>
+    <tr><td>InternalRequest</td><td>A destination floor pressed from inside a specific car</td></tr>
+    <tr><td>IDispatchStrategy</td><td>Decides which elevator handles a given external request</td></tr>
+    <tr><td>Display / Panel</td><td>Optional: shows current floor and direction per car</td></tr>
+  </table>
+
+  <h2>Key Design Decisions</h2>
+  <div class="callout tip">
+    <strong>Elevator owns its own request queue and state transitions.</strong> The controller doesn't micromanage movement, it only decides which elevator gets a new external request. This separation is what keeps the design testable.
+  </div>
+  <div class="callout tip">
+    <strong>State as an explicit enum, not booleans.</strong> Resist the urge to model this with <code class="inline">isMoving</code> / <code class="inline">isDoorOpen</code> flags. A single <code class="inline">ElevatorState</code> enum makes invalid combinations (moving with doors open) structurally impossible.
+  </div>
+  <div class="callout tip">
+    <strong>Dispatch strategy isolated behind an interface.</strong> "Nearest idle car" is the default, but this is the second most commonly probed extension point after the parking lot's pricing strategy, so it should never be hardcoded into the controller.
+  </div>
+
+  <h2>Relationships (textual diagram)</h2>
+  <pre>ElevatorController (1) ---- (many) Elevator
+ElevatorController ---- (1) IDispatchStrategy
+Elevator (1) ---- (many) InternalRequest  [pending stops]
+Elevator ---- (1) ElevatorState
+Elevator ---- (1) Direction
+ExternalRequest ---- (assigned to) ---- Elevator</pre>
+</div>
+
+<!-- TAB 2: C# IMPLEMENTATION -->
+<div class="tab-content">
+  <h2>Enums and Core Types</h2>
+<pre><span class="kw">public enum</span> <span class="tp">Direction</span> { Up, Down, None }
+
+<span class="kw">public enum</span> <span class="tp">ElevatorState</span> { Idle, Moving, DoorOpen }</pre>
+
+  <h2>Requests</h2>
+<pre><span class="kw">public class</span> <span class="tp">ExternalRequest</span>
+{
+    <span class="kw">public int</span> Floor { <span class="kw">get</span>; }
+    <span class="kw">public</span> Direction DesiredDirection { <span class="kw">get</span>; }
+
+    <span class="kw">public</span> ExternalRequest(<span class="kw">int</span> floor, Direction direction)
+    {
+        Floor = floor;
+        DesiredDirection = direction;
+    }
+}
+
+<span class="kw">public class</span> <span class="tp">InternalRequest</span>
+{
+    <span class="kw">public int</span> DestinationFloor { <span class="kw">get</span>; }
+
+    <span class="kw">public</span> InternalRequest(<span class="kw">int</span> destinationFloor)
+    {
+        DestinationFloor = destinationFloor;
+    }
+}</pre>
+
+  <h2>Elevator</h2>
+<pre><span class="kw">public class</span> <span class="tp">Elevator</span>
+{
+    <span class="kw">public int</span> Id { <span class="kw">get</span>; }
+    <span class="kw">public int</span> CurrentFloor { <span class="kw">get; private set</span>; }
+    <span class="kw">public</span> Direction CurrentDirection { <span class="kw">get; private set</span>; } = Direction.None;
+    <span class="kw">public</span> ElevatorState State { <span class="kw">get; private set</span>; } = ElevatorState.Idle;
+
+    <span class="kw">private readonly</span> <span class="tp">SortedSet</span>&lt;<span class="kw">int</span>&gt; _upStops = <span class="kw">new</span>();
+    <span class="kw">private readonly</span> <span class="tp">SortedSet</span>&lt;<span class="kw">int</span>&gt; _downStops = <span class="kw">new</span>(<span class="tp">Comparer</span>&lt;<span class="kw">int</span>&gt;.Create((a, b) => b.CompareTo(a)));
+    <span class="kw">private readonly object</span> _lock = <span class="kw">new</span>();
+
+    <span class="kw">public</span> Elevator(<span class="kw">int</span> id, <span class="kw">int</span> startFloor = 0)
+    {
+        Id = id;
+        CurrentFloor = startFloor;
+    }
+
+    <span class="kw">public void</span> AddStop(<span class="kw">int</span> floor)
+    {
+        <span class="kw">lock</span> (_lock)
+        {
+            <span class="kw">if</span> (floor > CurrentFloor) _upStops.Add(floor);
+            <span class="kw">else if</span> (floor < CurrentFloor) _downStops.Add(floor);
+            <span class="kw">if</span> (State == ElevatorState.Idle) CurrentDirection = floor > CurrentFloor ? Direction.Up : Direction.Down;
+        }
+    }
+
+    <span class="cm">// Called on each simulation "tick"; moves one floor toward the next stop</span>
+    <span class="kw">public void</span> Step()
+    {
+        <span class="kw">lock</span> (_lock)
+        {
+            <span class="kw">var</span> stops = CurrentDirection == Direction.Up ? _upStops : _downStops;
+
+            <span class="kw">if</span> (stops.Count == 0)
+            {
+                State = ElevatorState.Idle;
+                CurrentDirection = Direction.None;
+                <span class="kw">return</span>;
+            }
+
+            State = ElevatorState.Moving;
+            <span class="kw">var</span> nextStop = stops.Min == <span class="kw">default</span> ? stops.First() : stops.First();
+
+            CurrentFloor += CurrentDirection == Direction.Up ? 1 : -1;
+
+            <span class="kw">if</span> (CurrentFloor == nextStop)
+            {
+                stops.Remove(nextStop);
+                State = ElevatorState.DoorOpen; <span class="cm">// caller flips back to Moving/Idle next tick</span>
+            }
+        }
+    }
+}</pre>
+  <div class="callout warn">
+    This is a simplified SCAN-style sweep: keep moving in the current direction, servicing stops in order, and only reverse once the queue in that direction empties. It intentionally skips picking up opposite-direction requests mid-sweep, that nuance belongs in the follow-up tab.
+  </div>
+
+  <h2>Dispatch Strategy (Strategy Pattern)</h2>
+<pre><span class="kw">public interface</span> <span class="tp">IDispatchStrategy</span>
+{
+    Elevator? SelectElevator(<span class="tp">IEnumerable</span>&lt;Elevator&gt; elevators, ExternalRequest request);
+}
+
+<span class="kw">public class</span> <span class="tp">NearestCarStrategy</span> : IDispatchStrategy
+{
+    <span class="kw">public</span> Elevator? SelectElevator(<span class="tp">IEnumerable</span>&lt;Elevator&gt; elevators, ExternalRequest request)
+    {
+        <span class="kw">return</span> elevators
+            .Where(e => e.State == ElevatorState.Idle || IsMovingTowards(e, request))
+            .OrderBy(e => Math.Abs(e.CurrentFloor - request.Floor))
+            .FirstOrDefault();
+    }
+
+    <span class="kw">private static bool</span> IsMovingTowards(Elevator e, ExternalRequest request)
+    {
+        <span class="kw">if</span> (e.CurrentDirection == Direction.Up && request.DesiredDirection == Direction.Up)
+            <span class="kw">return</span> e.CurrentFloor <= request.Floor;
+        <span class="kw">if</span> (e.CurrentDirection == Direction.Down && request.DesiredDirection == Direction.Down)
+            <span class="kw">return</span> e.CurrentFloor >= request.Floor;
+        <span class="kw">return false</span>;
+    }
+}</pre>
+
+  <h2>ElevatorController</h2>
+<pre><span class="kw">public class</span> <span class="tp">ElevatorController</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;Elevator&gt; _elevators;
+    <span class="kw">private readonly</span> IDispatchStrategy _dispatchStrategy;
+
+    <span class="kw">public</span> ElevatorController(<span class="tp">List</span>&lt;Elevator&gt; elevators, IDispatchStrategy dispatchStrategy)
+    {
+        _elevators = elevators;
+        _dispatchStrategy = dispatchStrategy;
+    }
+
+    <span class="kw">public bool</span> RequestElevator(ExternalRequest request)
+    {
+        <span class="kw">var</span> chosen = _dispatchStrategy.SelectElevator(_elevators, request);
+        <span class="kw">if</span> (chosen == <span class="kw">null</span>) <span class="kw">return false</span>;
+
+        chosen.AddStop(request.Floor);
+        <span class="kw">return true</span>;
+    }
+
+    <span class="kw">public void</span> SelectFloor(<span class="kw">int</span> elevatorId, InternalRequest request)
+    {
+        <span class="kw">var</span> elevator = _elevators.First(e => e.Id == elevatorId);
+        elevator.AddStop(request.DestinationFloor);
+    }
+
+    <span class="kw">public void</span> Tick()
+    {
+        <span class="kw">foreach</span> (<span class="kw">var</span> elevator <span class="kw">in</span> _elevators)
+            elevator.Step();
+    }
+}</pre>
+</div>
+
+<!-- TAB 3: PATTERNS -->
+<div class="tab-content">
+  <h2>Patterns Used and Why</h2>
+
+  <h3>Strategy <span class="badge">dispatch algorithm</span></h3>
+  <p>Nearest-car is the default, but real systems switch to zone-based or load-balanced dispatch depending on building traffic patterns. Isolating it behind <code class="inline">IDispatchStrategy</code> means <code class="inline">ElevatorController</code> never changes when the business swaps the algorithm.</p>
+
+  <h3>State Pattern (conceptual) <span class="badge">Elevator lifecycle</span></h3>
+  <p>Even implemented here as a simple enum with guarded transitions, this is fundamentally the State pattern: behavior (what <code class="inline">Step()</code> does) depends on current state, and transitions are constrained (can't go DoorOpen &rarr; DoorOpen). If pushed for a "purer" OOP version, mention that each state could become its own class implementing a shared <code class="inline">IElevatorState</code> interface with a <code class="inline">Handle()</code> method, trading a bit of simplicity for stronger enforcement of valid transitions.</p>
+
+  <h3>Observer (extension point)</h3>
+  <p>A natural fit if asked "how would floor displays show which direction each car is going": each <code class="inline">Elevator</code> raises a state-changed event, and a <code class="inline">FloorDisplay</code> subscriber updates without the elevator knowing displays exist.</p>
+
+  <h3>Singleton (careful framing) <span class="badge">ElevatorController</span></h3>
+  <p>Same caution as the parking lot: if asked to make the controller a Singleton, prefer DI-registered singleton lifetime over a static <code class="inline">Instance</code>, for testability.</p>
+
+  <div class="callout follow">
+    The dispatch strategy is the load-bearing pattern here, same role Strategy played for pricing in the parking lot. Expect at least one "what if the algorithm changes" follow-up.
+  </div>
+</div>
+
+<!-- TAB 4: CONCURRENCY & STATE -->
+<div class="tab-content">
+  <h2>Where Concurrency Actually Matters</h2>
+  <ul>
+    <li><strong>Concurrent button presses:</strong> multiple floor buttons across the building can fire at the same instant. <code class="inline">AddStop</code> locks per-elevator so its stop queues stay consistent under concurrent dispatch calls.</li>
+    <li><strong>Dispatch vs. movement race:</strong> a request could be routed to an elevator the instant before it starts moving away. Locking the elevator's internal state during both <code class="inline">AddStop</code> and <code class="inline">Step</code> prevents the queues from being read mid-mutation.</li>
+    <li><strong>Multiple controllers is unnecessary:</strong> unlike the parking lot's multi-gate scenario, there's naturally one controller per bank of elevators, so the bigger concurrency surface here is inside each <code class="inline">Elevator</code>, not across elevators.</li>
+  </ul>
+
+  <h2>State Transition Rules Worth Stating Out Loud</h2>
+  <div class="callout tip">
+    Idle &rarr; Moving (new request arrives) &rarr; DoorOpen (reaches a stop) &rarr; Moving (more stops in same direction) or Idle (queue empty). Saying this sequence explicitly during the interview demonstrates you've actually thought through the state machine rather than hand-waving state as "just a status field".
+  </div>
+
+  <h2>Common Mistake to Avoid</h2>
+  <div class="callout warn">
+    Don't let the controller directly set an elevator's floor or state. If <code class="inline">ElevatorController</code> reaches into <code class="inline">Elevator</code> internals to force a floor change, you've broken encapsulation and made the state machine impossible to reason about independently. All mutation should go through <code class="inline">AddStop</code> and <code class="inline">Step</code>.
+  </div>
+</div>
+
+<!-- TAB 5: EXTENSIONS -->
+<div class="tab-content">
+  <h2>Likely Follow-Up Questions</h2>
+  <table>
+    <tr><th>Question</th><th>How to Answer</th></tr>
+    <tr><td>Pick up passengers going the same direction mid-sweep</td><td>Extend <code class="inline">Step</code> to check for matching-direction requests at the current floor before continuing past it, this is the real SCAN/LOOK algorithm refinement</td></tr>
+    <tr><td>Add weight limits</td><td>Add a <code class="inline">Capacity</code> and <code class="inline">CurrentLoad</code> to Elevator; <code class="inline">AddStop</code> or a boarding call rejects if over capacity</td></tr>
+    <tr><td>Express elevators serving only certain floors</td><td>Add a <code class="inline">ServableFloors</code> set per Elevator; dispatch strategy filters candidates by whether the requested floor is servable</td></tr>
+    <tr><td>Multiple elevator banks in a large building</td><td>One <code class="inline">ElevatorController</code> per bank, plus a thin routing layer that picks which bank serves a given floor range</td></tr>
+    <tr><td>Simulate over real time instead of discrete ticks</td><td>Replace <code class="inline">Tick()</code> with a background timer/task per elevator; same locking discipline applies</td></tr>
+    <tr><td>Priority requests (fire alarm override)</td><td>Add a priority flag to InternalRequest/ExternalRequest; queue becomes priority-aware rather than pure SortedSet ordering</td></tr>
+  </table>
+
+  <h2>Gap to Acknowledge if Asked</h2>
+  <div class="callout gap">
+    The <code class="inline">Step</code> implementation shown doesn't opportunistically pick up same-direction requests it passes along the way, it only responds to stops already queued in its current sweep direction. If asked to make it a true LOOK algorithm, say you'd check for compatible pending requests at each intermediate floor, not just the queued stop set.
+  </div>
+
+  <h2>30-Second Verbal Summary (for opening the answer)</h2>
+  <p>"I'd separate the controller, which only decides which elevator gets a request, from each elevator, which owns its own state machine and stop queue. Dispatch logic sits behind a Strategy interface so nearest-car can be swapped for zone-based later. State is an explicit enum with guarded transitions so moving-with-doors-open is structurally impossible. Concurrency is handled per-elevator with a lock around the stop queue and state, since button presses can arrive at any time from any floor."</p>
+</div>
+
+<script>
+  function showTab(index) {
+    document.querySelectorAll('.tab-content').forEach((el, i) => {
+      el.classList.toggle('active', i === index);
+    });
+    document.querySelectorAll('.tab-btn').forEach((el, i) => {
+      el.classList.toggle('active', i === index);
+    });
+  }
+</script>
+
+</body>
+</html>
